@@ -39,9 +39,9 @@ const CategoryPage = () => {
         if (p.badge !== 'bestseller') return false;
       } else if (collection === 'watch-and-buy' || collection === 'instagram-picks') {
         if (!p.isInstagramPick) return false;
-      } else if (!isCollection && category && p.category !== category) {
-        return false;
-      }
+      } else if (!isCollection && category && category !== 'all' && p.category !== category) {
+      return false;
+    }
 
       if (p.price > maxPrice) return false;
       if (selectedSubcategory !== 'All' && p.subcategory !== selectedSubcategory) return false;

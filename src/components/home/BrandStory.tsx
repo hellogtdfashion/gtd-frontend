@@ -81,11 +81,7 @@ const BrandStory = () => {
               
               <div className="h-px w-20 bg-accent/40 mx-auto lg:mx-0" />
 
-              <p className="text-muted-foreground text-base md:text-lg leading-relaxed font-light">
-                Founded by Divya, Glorious Threads is a sanctuary for those who appreciate 
-                the soul of a handwoven saree and the grandeur of a handcrafted lehenga. 
-                We bring India’s heritage into your wardrobe with grace.
-              </p>
+              
             </div>
           </motion.div>
 

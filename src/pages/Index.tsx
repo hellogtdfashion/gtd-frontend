@@ -10,6 +10,8 @@ import SareesCollection from '@/components/home/SareesCollection';
 import BrandStory from '@/components/home/BrandStory';
 import KidsCollection from '@/components/home/KidsCollection';
 import Testimonials from '@/components/home/Testimonials';
+import ExploreAll from '@/components/home/ExploreAll';
+
 
 const Index = () => {
   return (
@@ -21,6 +23,7 @@ const Index = () => {
         <CategoryCircles />
         
         <NewArrivals />
+        <ExploreAll />
         <WatchAndBuy />
         <InstagramBestSellers />
         <FeaturedLehengas />
