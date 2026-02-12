@@ -13,6 +13,7 @@ import Testimonials from '@/components/home/Testimonials';
 import ExploreAll from '@/components/home/ExploreAll';
 
 
+
 const Index = () => {
   return (
     <div className="min-h-screen bg-white">
@@ -26,6 +27,7 @@ const Index = () => {
         <ExploreAll />
         <WatchAndBuy />
         <InstagramBestSellers />
+        
         <FeaturedLehengas />
         <SareesCollection />
         <BrandStory />

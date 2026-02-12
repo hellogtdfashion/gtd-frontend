@@ -1,79 +1,68 @@
-import { useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/product/ProductCard';
-import { getBestSellers } from '@/data/products';
+import { storeService } from "../../services/api";
 
 const BestSellers = () => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const products = getBestSellers();
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = 320;
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      });
-    }
-  };
+  useEffect(() => {
+    const fetchBestSellers = async () => {
+      try {
+        // Fetching best sellers from the dynamic backend endpoint
+        const data = await storeService.getProducts({ is_best_seller: true });
+        setProducts(data.results || data);
+      } catch (err) {
+        console.error("Best Sellers Load Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBestSellers();
+  }, []);
+
+  if (loading) return <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-primary" /></div>;
+  if (products.length === 0) return null;
 
   return (
     <section className="section-padding bg-background">
       <div className="container-luxury mx-auto">
-        {/* Header - Exact match to New Arrivals */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="flex flex-col md:flex-row md:items-end md:justify-between mb-8"
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          whileInView={{ opacity: 1, y: 0 }} 
+          viewport={{ once: true }} 
+          transition={{ duration: 0.6 }} 
+          className="flex items-end justify-between mb-8 px-1"
         >
           <div>
-            
             <h2 className="heading-section mt-2">Best Sellers</h2>
-            <p className="text-muted-foreground mt-2 max-w-md">
-              Our community's favorites. The absolute best of Indian craftsmanship.
-            </p>
           </div>
           
-          <div className="flex items-center gap-4 mt-4 md:mt-0">
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-full border-border hover:border-accent hover:text-accent"
-                onClick={() => scroll('left')}
+          <div className="flex items-center">
+            <Link to="/collections/best-sellers">
+              <Button 
+                variant="ghost" 
+                className="group text-primary hover:bg-[#F4C430] hover:text-black font-black uppercase text-[10px] md:text-xs tracking-widest px-3 py-2 md:px-5 md:py-6 transition-all duration-300"
               >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-full border-border hover:border-accent hover:text-accent"
-                onClick={() => scroll('right')}
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-            <Link to="/collections/best-sellers" className="hidden md:block">
-              <Button variant="ghost" className="group text-primary hover:text-primary">
-                View All
-                <ArrowRight className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-1" />
+                View All <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
           </div>
         </motion.div>
 
-        {/* Carousel */}
-        <div
-          ref={scrollRef}
-          className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4"
-        >
+        {/* MOBILE: 2 Columns Grid (Top 4 items)
+            DESKTOP: Horizontal scroll (flex)
+        */}
+        <div className="grid grid-cols-2 md:flex md:overflow-x-auto gap-3 md:gap-6 scrollbar-hide pb-4">
           {products.map((product, index) => (
-            <div key={product.id} className="flex-shrink-0 w-64 md:w-72">
+            <div 
+              key={product.id} 
+              className={`w-full md:w-72 md:flex-shrink-0 ${index >= 4 ? 'hidden md:block' : ''}`}
+            >
               <ProductCard product={product} index={index} />
             </div>
           ))}

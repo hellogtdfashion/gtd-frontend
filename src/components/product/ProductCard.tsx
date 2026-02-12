@@ -1,78 +1,65 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
-import { Product, formatPrice } from '@/data/products';
 
-interface ProductCardProps {
-  product: Product;
-  index?: number;
-}
-
-const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
-  const hasDiscount = product.originalPrice && product.originalPrice > product.price;
-  const discountPercentage = hasDiscount
-    ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)
-    : 0;
+const ProductCard = ({ product, index = 0 }: { product: any; index?: number }) => {
+  const price = Number(product.price);
+  const original = Number(product.original_price);
+  const savings = original > price ? Math.floor(original - price) : 0;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="group product-card bg-white"
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.5, delay: index * 0.05 }}
+      className="group bg-white overflow-hidden transition-all duration-500"
     >
-      {/* Image Container */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
-        <Link to={`/product/${product.slug}`}>
-          <img
-            src={product.images[0]} // Always show the primary image
-            alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+      <Link to={`/product/${product.slug}`}>
+        {/* Image Container with Rating Overlay */}
+        <div className="relative aspect-[3/4] bg-zinc-50 overflow-hidden mb-3">
+          <img 
+            src={product.images?.[0]?.url || ''} 
+            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+            alt={product.title}
           />
-        </Link>
-
-        {/* Badges - Simplified and moved to top-left */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
-          {product.badge === 'new' && (
-            <span className="bg-accent text-white text-[10px] px-2 py-0.5 font-bold uppercase rounded-sm">New</span>
-          )}
-          {product.badge === 'bestseller' && (
-            <span className="bg-primary text-white text-[10px] px-2 py-0.5 font-bold uppercase rounded-sm">Bestseller</span>
-          )}
-          {hasDiscount && (
-            <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 font-bold rounded-sm">
-              -{discountPercentage}%
-            </span>
+          
+          {/* Rating Pill - Top Left Style from reference */}
+          {product.average_rating > 0 && (
+            <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 flex items-center gap-1 shadow-sm border border-zinc-100 rounded-md z-10">
+              <span className="text-[11px] font-bold text-black">{product.average_rating}</span>
+              <Star size={10} className="fill-[#F4C430] text-[#F4C430]" />
+              {product.review_count > 0 && (
+                <span className="text-[10px] text-zinc-400 border-l border-zinc-200 pl-1 ml-1 font-medium">
+                  {product.review_count}
+                </span>
+              )}
+            </div>
           )}
         </div>
-      </div>
 
-      {/* Product Info */}
-      <div className="p-3 text-center">
-        {/* Name */}
-        <Link to={`/product/${product.slug}`}>
-          <h3 className="font-body text-xs md:text-sm font-medium text-foreground line-clamp-1 hover:text-primary transition-colors mb-1">
-            {product.name}
+        {/* Text Content */}
+        <div className="space-y-1 px-1">
+          <p className="text-[9px] font-bold text-zinc-300 uppercase tracking-widest truncate">
+            {product.category_name}
+          </p>
+          <h3 className="text-[13px] font-bold text-black uppercase truncate group-hover:text-zinc-600 transition-colors">
+            {product.title}
           </h3>
-        </Link>
-
-        {/* Price */}
-        <div className="flex items-center justify-center gap-2 mb-1">
-          <span className="text-sm font-bold text-primary">{formatPrice(product.price)}</span>
-          {hasDiscount && (
-            <span className="text-xs text-muted-foreground line-through">{formatPrice(product.originalPrice!)}</span>
-          )}
+          
+          <div className="flex items-center gap-2 pt-0.5">
+            <span className="text-sm font-black text-black">₹{price}</span>
+            {original > price && (
+              <>
+                <span className="text-[11px] text-zinc-600 line-through font-medium">₹{original}</span>
+                {/* Fixed OFF Amount in Green beside original price */}
+                <span className="text-[10px] font-black text-green-600 uppercase tracking-tighter">
+                  ₹{savings} OFF
+                </span>
+              </>
+            )}
+          </div>
         </div>
-
-        {/* Static Star Rating */}
-        <div className="flex items-center justify-center gap-1">
-          <Star className="w-3 h-3 text-accent fill-accent" />
-          <span className="text-[10px] text-muted-foreground">
-            {product.rating} ({product.reviewCount})
-          </span>
-        </div>
-      </div>
+      </Link>
     </motion.div>
   );
 };

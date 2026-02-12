@@ -45,6 +45,7 @@ export const authService = {
     }
     return res.data;
   },
+  
 
   googleLogin: async (googleData: { code: string }) => {
     const payload = { code: googleData.code, callback_url: "postmessage" };
@@ -71,6 +72,68 @@ export const authService = {
 
 export const orderService = {
   getUserOrders: async () => (await api.get('/orders/')).data,
+};
+
+export const storeService = {
+  // Fetch products with optional filters (badge, category, search, etc.)
+  getProducts: async (params?: any) => { 
+    const response = await api.get('/store/products/', { params });
+    return response.data;
+  },
+
+  getProductBySlug: async (slug: string) => {
+    const response = await api.get(`/store/products/${slug}/`);
+    return response.data;
+  },
+
+  getCategories: async (params?: { featured?: boolean; gender?: string }) => {
+    const response = await api.get('/store/categories/', { params });
+    return response.data;
+  },
+
+  getCollections: async () => {
+    const response = await api.get('/store/collections/');
+    return response.data;
+  },
+
+  getReviews: async (slug: string) => {
+    const response = await api.get(`/store/products/${slug}/reviews/`);
+    return response.data;
+  },
+
+  addReview: async (slug: string, data: any) => {
+    const response = await api.post(`/store/products/${slug}/reviews/`, data);
+    return response.data;
+  },
+  submitReview: async (productSlug: string, reviewData: FormData) => {
+  const response = await api.post(`/store/products/${productSlug}/reviews/`, reviewData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+},
+
+  // Professional Global Search
+  searchEverything: async (query: string) => {
+    const response = await api.get(`/store/search/?q=${query}`);
+    return response.data;
+  },
+
+  getHomeData: async () => {
+    const response = await api.get('/store/home-data/');
+    return response.data;
+  },
+
+  getSiteConfig: async () => {
+    const response = await api.get("/store/config/");
+    return response.data;
+  },
+  getWatchBuyProducts: async () => {
+    const response = await api.get('/store/products/', { 
+      params: { is_watch_and_buy: 'true' } 
+    });
+    return response.data;
+  },
+  
 };
 
 export default api;
