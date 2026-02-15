@@ -17,23 +17,45 @@ const Header = () => {
   const [productResults, setProductResults] = useState<any[]>([]);
   const [categoryResults, setCategoryResults] = useState<any[]>([]);
   
+  // Announcement States
+  const [announcements, setAnnouncements] = useState<string[]>([]);
+  const [announcementIndex, setAnnouncementIndex] = useState(0);
+
   const navigate = useNavigate();
   const location = useLocation();
   const { cartItems } = useCart();
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const isLoggedIn = !!localStorage.getItem("userToken");
 
+  // Fetch Nav Data and Announcements
   useEffect(() => {
-    const fetchCategories = async () => {
+
+    const fetchData = async () => {
       try {
-        const data = await storeService.getCategories();
-        setNavData(data);
+        const catData = await storeService.getCategories();
+        setNavData(catData);
+        
+        // Fetch web content for announcements
+        const webContent = await storeService.getWebContent();
+        if (webContent.announcements) {
+          setAnnouncements(webContent.announcements);
+        }
       } catch (err) {
-        console.error("Nav Load Error", err);
+        console.error("Load Error", err);
       }
     };
-    fetchCategories();
+    fetchData();
   }, []);
+
+  // Announcement Timer
+  useEffect(() => {
+    if (announcements.length > 0) {
+      const timer = setInterval(() => {
+        setAnnouncementIndex((prev) => (prev + 1) % announcements.length);
+      }, 4000);
+      return () => clearInterval(timer);
+    }
+  }, [announcements]);
 
   useEffect(() => {
     const delayDebounce = setTimeout(async () => {
@@ -98,6 +120,24 @@ const Header = () => {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 font-sans">
+      {/* ANNOUNCEMENT BAR */}
+      {announcements.length > 0 && (
+        <div className="bg-primary text-white h-9 flex items-center justify-center overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={announcementIndex}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-center px-4"
+            >
+              {announcements[announcementIndex]}
+            </motion.p>
+          </AnimatePresence>
+        </div>
+      )}
+
       <header className="bg-white border-b border-pink-100 shadow-sm h-20 md:h-24 flex items-center">
         <div className="container mx-auto px-4 w-full flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">

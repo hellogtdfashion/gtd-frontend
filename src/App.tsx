@@ -6,7 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import ScrollToTop from "./components/layout/ScrollToTop";
 import Login from "./pages/Login";
-
+import WatchAndBuyDetails from "./pages/WatchAndBuyDetails"
+import WatchBuyListingPage from "./pages/WatchBuyListingPage";
 // Pages
 import UserProfile from "./pages/UserProfile";
 import Index from "./pages/Index";
@@ -35,6 +36,8 @@ const App = () => (
             <Route path="/product/:slug" element={<ProductDetail />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/watch-and-buy/:slug" element={<WatchAndBuyDetails />} />
+            <Route path="/watch-and-buy" element={<WatchBuyListingPage />} />
             <Route path="/collections/:collection" element={<CategoryPage />} />
             <Route path="/wishlist" element={<CartPage />} />
             <Route path="*" element={<NotFound />} />

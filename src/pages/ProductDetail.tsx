@@ -253,7 +253,11 @@ const ProductDetail = () => {
                         <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
                           {reviewForm.image ? reviewForm.image.name : "Click to upload a photo"}
                         </span>
-                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => setReviewForm({...reviewForm, image: e.target.files?.[0] || null})} />
+                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => {
+    // 🔥 FIX: Use e.target.files[0] to get the actual file object
+    const file = e.target.files ? e.target.files[0] : null;
+    setReviewForm({ ...reviewForm, image: file }); 
+  }} />
                       </div>
                     </div>
 
@@ -273,7 +277,12 @@ const ProductDetail = () => {
                         {[...Array(5)].map((_, i) => <Star key={i} size={10} className={i < r.rating ? 'fill-current' : 'text-zinc-200'} />)}
                       </div>
                       <p className="text-sm text-zinc-800 font-medium mb-4 italic">"{r.comment}"</p>
-                      {r.image && <img src={r.image} className="w-24 aspect-[3/4] object-cover mb-4 border border-zinc-100" alt="Review" />}
+                      {r.image && <img 
+    src={r.image} 
+    className="w-24 h-32 object-cover rounded-lg mb-4" 
+    alt="Review" 
+    onError={(e) => console.log("Broken image link:", r.image)} 
+  />}
                       <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">— {r.user_name}</span>
                     </div>
                   ))}

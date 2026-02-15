@@ -101,10 +101,14 @@ export const storeService = {
     return response.data;
   },
 
-  addReview: async (slug: string, data: any) => {
-    const response = await api.post(`/store/products/${slug}/reviews/`, data);
-    return response.data;
-  },
+addReview: async (slug: string, formData: FormData) => {
+  // 🔥 Add 'store' to the path here
+  return await api.post(`/store/products/${slug}/reviews/`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+},
   submitReview: async (productSlug: string, reviewData: FormData) => {
   const response = await api.post(`/store/products/${productSlug}/reviews/`, reviewData, {
     headers: { 'Content-Type': 'multipart/form-data' }
@@ -127,13 +131,37 @@ export const storeService = {
     const response = await api.get("/store/config/");
     return response.data;
   },
-  getWatchBuyProducts: async () => {
-    const response = await api.get('/store/products/', { 
-      params: { is_watch_and_buy: 'true' } 
+ getWatchBuyProducts: async () => {
+    // This should point to your new watch-and-buy endpoint
+    const response = await api.get('/watch-and-buy/'); 
+    return response.data;
+  },
+  getWebContent: async () => {
+    try {
+      // 🔥 CHANGE: Use 'api.get' instead of 'axios.get'
+      // Also ensure the path matches your core/urls.py (usually /api/content/ or /content/)
+      const response = await api.get('/content/'); 
+      
+      console.log("Full Web Content Response:", response.data); // Debugging line
+      return response.data; 
+    } catch (error) {
+      console.error("API Error in getWebContent:", error);
+      throw error;
+    }
+  },
+  getWatchBuyDetail: async (slug: string) => {
+    const response = await api.get(`/watch-and-buy/${slug}/`);
+    return response.data;
+  },
+  addWatchBuyReview: async (slug: string, formData: FormData) => {
+    // This allows image uploads by sending the FormData object
+    const response = await api.post(`/watch-and-buy/${slug}/review/`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
     return response.data;
   },
-  
 };
 
 export default api;
