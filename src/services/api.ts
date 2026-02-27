@@ -153,10 +153,7 @@ addReview: async (slug: string, formData: FormData) => {
     return response.data;
   },
 
-  getSiteConfig: async () => {
-    const response = await api.get("/store/config/");
-    return response.data;
-  },
+ 
  getWatchBuyProducts: async () => {
     // This should point to your new watch-and-buy endpoint
     const response = await api.get('/watch-and-buy/'); 
@@ -188,6 +185,18 @@ addReview: async (slug: string, formData: FormData) => {
     });
     return response.data;
   },
+ getSiteConfig: async () => {
+    const response = await api.get('/store/config/');
+    return response.data;
+  },
+
+  validateCoupon: async (code: string, orderTotal: number) => {
+    const response = await api.post('/store/validate-coupon/', {
+      code: code,
+      order_total: orderTotal
+    });
+    return response.data;
+  }
 };
 
 export default api;

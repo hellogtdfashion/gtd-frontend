@@ -74,22 +74,25 @@ const CartPage = () => {
               </div>
 
               {/* Order Summary Sidebar */}
-              <div className="bg-[#FFF8F8] p-8 rounded-[2.5rem] h-fit border border-pink-100 shadow-sm">
-                <h2 className="text-xl font-black text-black mb-6 uppercase tracking-widest">Summary</h2>
-                <div className="space-y-4 text-xs font-bold border-b border-pink-100 pb-6">
-                  <div className="flex justify-between text-gray-500"><span>Subtotal</span><span>₹{subtotal}</span></div>
-                  <div className="flex justify-between text-gray-500"><span>Estimated Shipping</span><span>{shipping === 0 ? <span className="text-green-600">FREE</span> : `₹${shipping}`}</span></div>
-                </div>
-                <div className="flex justify-between text-xl font-black text-black pt-6 mb-8 uppercase tracking-tighter">
-                  <span>Total</span><span>₹{subtotal + shipping}</span>
-                </div>
-                <Link to="/checkout">
-                  <Button className="w-full bg-[#1F2B5B] hover:bg-[#151e41] text-white h-16 font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-blue-900/10">
-                    Proceed to Checkout <ArrowRight size={16} className="ml-2" />
-                  </Button>
-                </Link>
-                <p className="text-[9px] text-gray-400 text-center mt-6 uppercase font-bold tracking-widest">Secure SSL Encrypted Checkout</p>
-              </div>
+              {/* CartPage.tsx Sidebar */}
+<div className="bg-[#FFF8F8] p-8 rounded-[2.5rem] h-fit border border-pink-100 shadow-sm">
+  <h2 className="text-xl font-black text-black mb-6 uppercase tracking-widest">Bag Summary</h2>
+  <div className="space-y-4 text-xs font-bold border-b border-pink-100 pb-6">
+    <div className="flex justify-between text-gray-500">
+      <span>Subtotal ({cartItems.length} items)</span>
+      <span>₹{subtotal}</span>
+    </div>
+    <p className="text-[10px] text-zinc-400 italic">Shipping and discounts calculated at checkout</p>
+  </div>
+  <div className="flex justify-between text-xl font-black text-black pt-6 mb-8 uppercase tracking-tighter">
+    <span>Estimate Total</span><span>₹{subtotal}</span>
+  </div>
+  <Link to="/checkout">
+    <Button className="w-full bg-black text-white h-16 font-black uppercase tracking-widest text-xs rounded-2xl">
+      Checkout Now <ArrowRight size={16} className="ml-2" />
+    </Button>
+  </Link>
+</div>
             </div>
           )}
         </div>

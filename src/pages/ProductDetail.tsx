@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Star, Minus, Plus, ChevronRight, Loader2, Truck, RotateCcw, Camera, Heart, Share2 } from 'lucide-react';
+import { Star, Minus, Plus, ChevronRight, Loader2, Truck, RotateCcw, Camera, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { storeService } from '@/services/api';
@@ -18,13 +18,13 @@ const ProductDetail = () => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
+  // 1. NO AUTO SELECTION: Set to null/empty by default
   const [selectedColor, setSelectedColor] = useState<any>(null);
   const [selectedSize, setSelectedSize] = useState("");
   const [displayPrice, setDisplayPrice] = useState<number>(0);
   const [quantity, setQuantity] = useState(1);
   const [currentImage, setCurrentImage] = useState(0);
 
-  // 🔥 UPDATED REVIEW STATE
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewForm, setReviewForm] = useState({ name: '', rating: 5, comment: '', image: null as File | null });
   const [hoveredStar, setHoveredStar] = useState(0);
@@ -40,17 +40,9 @@ const ProductDetail = () => {
         ]);
         setProduct(data);
         setReviews(reviewsData.results || reviewsData);
-        if (data.colors?.length > 0) {
-          const initialColor = data.colors[0];
-          setSelectedColor(initialColor);
-          setCurrentImage(0);
-          if (initialColor.sizes?.length > 0) {
-            setSelectedSize(initialColor.sizes[0].size);
-            setDisplayPrice(Number(initialColor.sizes[0].price));
-          }
-        } else {
-          setDisplayPrice(Number(data.price));
-        }
+        
+        // 1. NO AUTO SELECTION: Removed initial color/size setting
+        setDisplayPrice(Number(data.price));
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
     };
@@ -61,18 +53,12 @@ const ProductDetail = () => {
     if (selectedSize && selectedColor) {
       const sizeObj = selectedColor.sizes.find((s: any) => s.size === selectedSize);
       if (sizeObj) setDisplayPrice(Number(sizeObj.price));
-      else {
-        const firstAvailable = selectedColor.sizes[0];
-        if (firstAvailable) {
-          setSelectedSize(firstAvailable.size);
-          setDisplayPrice(Number(firstAvailable.price));
-        }
-      }
     }
   }, [selectedSize, selectedColor]);
 
   const displayImages = useMemo(() => {
-    if (!product || !selectedColor) return [];
+    if (!product) return [];
+    if (!selectedColor) return product.images;
     const filtered = product.images.filter((img: any) => img.color === selectedColor.id || !img.color);
     return filtered.length > 0 ? filtered : product.images;
   }, [product, selectedColor]);
@@ -80,9 +66,9 @@ const ProductDetail = () => {
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reviewForm.name || !reviewForm.comment) {
-    toast.error("Please fill in all fields");
-    return;
-  }
+      toast.error("Please fill in all fields");
+      return;
+    }
     const formData = new FormData();
     formData.append('user_name', reviewForm.name);
     formData.append('rating', reviewForm.rating.toString());
@@ -90,19 +76,35 @@ const ProductDetail = () => {
     if (reviewForm.image) formData.append('image', reviewForm.image);
 
     try {
-    // 🔥 Ensure you use the submitReview method which has the multipart/form-data header
-    await storeService.addReview(slug!, formData); 
-    toast.success("Review posted! It will appear shortly.");
-    setShowReviewForm(false);
-    setReviewForm({ name: '', rating: 5, comment: '', image: null }); // Reset form
-    
-    // Refresh reviews
-    const updated = await storeService.getReviews(slug!);
-    setReviews(updated.results || updated);
-  } catch (err: any) { 
-    console.error("Review Error:", err);
-    toast.error(err.detail || "Error posting review"); 
-  }
+      await storeService.addReview(slug!, formData); 
+      toast.success("Review posted! It will appear shortly.");
+      setShowReviewForm(false);
+      setReviewForm({ name: '', rating: 5, comment: '', image: null });
+      const updated = await storeService.getReviews(slug!);
+      setReviews(updated.results || updated);
+    } catch (err: any) { 
+      console.error("Review Error:", err);
+      toast.error(err.detail || "Error posting review"); 
+    }
+  };
+
+  const handleAddToCart = (action: 'bag' | 'buy') => {
+    // Selection Validation
+    if (!selectedColor) {
+        toast.error("Please select a color first");
+        return;
+    }
+    if (!selectedSize) {
+      toast.error("Please select a size first");
+      return;
+    }
+  
+    addToCart(product, quantity, selectedSize, selectedColor);
+    if (action === 'buy') {
+      navigate('/cart');
+    } else {
+      toast.success("Added to bag");
+    }
   };
 
   const savings = product?.original_price ? Math.floor(product.original_price - displayPrice) : 0;
@@ -121,13 +123,18 @@ const ProductDetail = () => {
               <div className="aspect-[3/4] bg-zinc-50 relative overflow-hidden group">
                 <img src={displayImages[currentImage]?.url} className="w-full h-full object-cover transition-opacity duration-300" alt="" />
                 <div className="absolute bottom-4 right-4 flex gap-2">
-                  <button className="bg-white/90 p-3 rounded-full shadow-sm hover:bg-zinc-100"><Heart size={18} /></button>
+                  {/* 3. Removed Wishlist Heart Icon */}
                   <button className="bg-white/90 p-3 rounded-full shadow-sm hover:bg-zinc-100"><Share2 size={18} /></button>
                 </div>
               </div>
               <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                 {displayImages.map((img: any, i: number) => (
-                  <button key={i} onClick={() => setCurrentImage(i)} className={`shrink-0 w-20 aspect-[3/4] border-2 transition-all ${currentImage === i ? 'border-black' : 'border-transparent opacity-40'}`}>
+                  <button 
+                    key={i} 
+                    onClick={() => setCurrentImage(i)} 
+                    // 4. Removed opacity-40 from non-selected images
+                    className={`shrink-0 w-20 aspect-[3/4] border-2 transition-all ${currentImage === i ? 'border-black' : 'border-transparent'}`}
+                  >
                     <img src={img.url} className="w-full h-full object-cover" alt="" />
                   </button>
                 ))}
@@ -151,10 +158,16 @@ const ProductDetail = () => {
               </div>
 
               <div className="mb-8">
-                <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-700 block mb-4">Select Color</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-700 block mb-4">
+                    Select Color {selectedColor ? `: ${selectedColor.name}` : '(Required)'}
+                </span>
                 <div className="flex gap-3">
                   {product.colors.map((c: any) => (
-                    <button key={c.name} onClick={() => {setSelectedColor(c); setCurrentImage(0);}} className={`w-14 h-18 border-2 transition-all overflow-hidden ${selectedColor?.name === c.name ? 'border-black' : 'border-zinc-100 opacity-60'}`}>
+                    <button 
+                        key={c.name} 
+                        onClick={() => {setSelectedColor(c); setCurrentImage(0); setSelectedSize("");}} 
+                        className={`w-14 h-18 border-2 transition-all overflow-hidden ${selectedColor?.name === c.name ? 'border-black' : 'border-zinc-100 opacity-60'}`}
+                    >
                       <img src={product.images.find((i:any)=>i.color === c.id || i.color_name === c.name)?.url || product.images[0].url} className="w-full h-full object-cover" />
                     </button>
                   ))}
@@ -163,15 +176,23 @@ const ProductDetail = () => {
 
               <div className="mb-8">
                 <div className="flex justify-between mb-4">
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-700">Size</span>
-                  <button className="text-[10px] font-bold underline uppercase">Guide</button>
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-700">
+                    Size {selectedSize ? `: ${selectedSize}` : '(Required)'}
+                  </span>
+                  {/* 1. Removed Guide Button */}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {selectedColor?.sizes.map((s: any) => (
-                    <button key={s.size} onClick={() => setSelectedSize(s.size)} disabled={!s.inStock} className={`h-12 px-6 border-2 font-bold text-xs transition-all ${selectedSize === s.size ? 'bg-black text-white border-black' : 'bg-white border-zinc-100 hover:border-black'} ${!s.inStock ? 'opacity-20 cursor-not-allowed' : ''}`}>
+                  {(selectedColor?.sizes || []).map((s: any) => (
+                    <button 
+                        key={s.size} 
+                        onClick={() => setSelectedSize(s.size)} 
+                        disabled={!s.inStock} 
+                        className={`h-12 px-6 border-2 font-bold text-xs transition-all ${selectedSize === s.size ? 'bg-black text-white border-black' : 'bg-white border-zinc-100 hover:border-black'} ${!s.inStock ? 'opacity-20 cursor-not-allowed' : ''}`}
+                    >
                       {s.size}
                     </button>
                   ))}
+                  {!selectedColor && <p className="text-[10px] text-zinc-400 italic">Please select a color to view sizes</p>}
                 </div>
               </div>
 
@@ -185,8 +206,19 @@ const ProductDetail = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-3 mb-10">
-                <Button onClick={() => addToCart(product, quantity, selectedSize, selectedColor)} variant="outline" className="btn-premium border-zinc-900 text-zinc-900">Add to Bag</Button>
-                <Button onClick={() => { addToCart(product, quantity, selectedSize, selectedColor); navigate('/cart'); }} className="btn-premium bg-zinc-900 text-white">Buy Now</Button>
+                <Button 
+                    onClick={() => handleAddToCart('bag')} 
+                    variant="outline" 
+                    className={`btn-premium border-zinc-900 text-zinc-900 ${!selectedSize ? 'opacity-70' : ''}`}
+                >
+                    Add to Bag
+                </Button>
+                <Button 
+                    onClick={() => handleAddToCart('buy')} 
+                    className={`btn-premium bg-zinc-900 text-white ${!selectedSize ? 'opacity-70' : ''}`}
+                >
+                    Buy Now
+                </Button>
               </div>
 
               <div className="space-y-4 pt-8 border-t border-zinc-50 text-[11px] font-bold uppercase tracking-widest text-zinc-500">
@@ -214,7 +246,6 @@ const ProductDetail = () => {
                 </div>
               </TabsContent>
 
-              {/* 🔥 UPDATED REVIEWS CONTENT */}
               <TabsContent value="reviews">
                 <div className="flex justify-between items-center mb-10">
                   <h3 className="text-sm font-bold uppercase tracking-widest">User Experiences</h3>
@@ -255,10 +286,9 @@ const ProductDetail = () => {
                           {reviewForm.image ? reviewForm.image.name : "Click to upload a photo"}
                         </span>
                         <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => {
-    // 🔥 FIX: Use e.target.files[0] to get the actual file object
-    const file = e.target.files ? e.target.files[0] : null;
-    setReviewForm({ ...reviewForm, image: file }); 
-  }} />
+                          const file = e.target.files ? e.target.files[0] : null;
+                          setReviewForm({ ...reviewForm, image: file }); 
+                        }} />
                       </div>
                     </div>
 
@@ -278,12 +308,7 @@ const ProductDetail = () => {
                         {[...Array(5)].map((_, i) => <Star key={i} size={10} className={i < r.rating ? 'fill-current' : 'text-zinc-200'} />)}
                       </div>
                       <p className="text-sm text-zinc-800 font-medium mb-4 italic">"{r.comment}"</p>
-                      {r.image && <img 
-    src={r.image} 
-    className="w-24 h-32 object-cover rounded-lg mb-4" 
-    alt="Review" 
-    onError={(e) => console.log("Broken image link:", r.image)} 
-  />}
+                      {r.image && <img src={r.image} className="w-24 h-32 object-cover rounded-lg mb-4" alt="Review" />}
                       <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">— {r.user_name}</span>
                     </div>
                   ))}

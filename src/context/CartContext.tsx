@@ -1,21 +1,23 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react'; // ✅ Added useEffect
 
 interface CartItem {
-  id: string; // Combined: productId + color + size
+  id: string; 
   productId: string | number;
   name: string;
+  title?: string;
   price: number;
   image: string;
   quantity: number;
   selectedSize: string;
   selectedColor: { name: string; hex: string };
+  slug: string; // ✅ Added slug to fix Object literal error
 }
 
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (product: any, quantity: number, size: string, color: { name: string; hex: string }) => void;
-  removeFromCart: (id: string, size: string) => void;
-  updateQuantity: (id: string, size: string, delta: number) => void;
+  removeFromCart: (id: string) => void; // ✅ Fixed signature
+  updateQuantity: (id: string, delta: number) => void; // ✅ Fixed signature
   clearCart: () => void;
   subtotal: number;
 }
@@ -23,7 +25,16 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  // ✅ PERSISTENCE: Load from localStorage
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    const savedCart = localStorage.getItem('gtd_cart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
+  // ✅ PERSISTENCE: Sync to localStorage
+  useEffect(() => {
+    localStorage.setItem('gtd_cart', JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const addToCart = (product: any, quantity: number, size: string, color: { name: string; hex: string }) => {
     setCartItems((prev) => {
@@ -45,6 +56,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         quantity,
         selectedSize: size,
         selectedColor: color,
+        slug: product.slug // ✅ Now valid
       };
       return [...prev, newItem];
     });
@@ -54,11 +66,15 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     setCartItems((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const updateQuantity = (id: string, size: string, delta: number) => {
+  const updateQuantity = (id: string, delta: number) => {
     setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
-      )
+      prev.map((item) => {
+        if (item.id === id) {
+          const newQty = item.quantity + delta;
+          return newQty > 0 ? { ...item, quantity: newQty } : item;
+        }
+        return item;
+      })
     );
   };
 

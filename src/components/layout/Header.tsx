@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import logo from '@/assets/logo.png'; 
 import { useCart } from '@/context/CartContext';
 import { storeService } from "../../services/api";
+import { CartDrawer } from '../CartDrawer';
 
 const Header = () => {
   const [navData, setNavData] = useState<any[]>([]);
@@ -16,10 +17,11 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [productResults, setProductResults] = useState<any[]>([]);
   const [categoryResults, setCategoryResults] = useState<any[]>([]);
-  
-  // Announcement States
   const [announcements, setAnnouncements] = useState<string[]>([]);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
+  
+  // ✅ Added State for Sidebar
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -27,27 +29,18 @@ const Header = () => {
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const isLoggedIn = !!localStorage.getItem("userToken");
 
-  // Fetch Nav Data and Announcements
   useEffect(() => {
-
     const fetchData = async () => {
       try {
         const catData = await storeService.getCategories();
         setNavData(catData);
-        
-        // Fetch web content for announcements
         const webContent = await storeService.getWebContent();
-        if (webContent.announcements) {
-          setAnnouncements(webContent.announcements);
-        }
-      } catch (err) {
-        console.error("Load Error", err);
-      }
+        if (webContent.announcements) setAnnouncements(webContent.announcements);
+      } catch (err) { console.error("Load Error", err); }
     };
     fetchData();
   }, []);
 
-  // Announcement Timer
   useEffect(() => {
     if (announcements.length > 0) {
       const timer = setInterval(() => {
@@ -65,9 +58,7 @@ const Header = () => {
           const results = await storeService.searchEverything(query);
           setProductResults(results.products || []);
           setCategoryResults(results.categories || []);
-        } catch (err) {
-          console.error("Search error", err);
-        }
+        } catch (err) { console.error("Search error", err); }
       } else {
         setProductResults([]);
         setCategoryResults([]);
@@ -120,18 +111,10 @@ const Header = () => {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 font-sans">
-      {/* ANNOUNCEMENT BAR */}
       {announcements.length > 0 && (
         <div className="bg-primary text-white h-9 flex items-center justify-center overflow-hidden">
           <AnimatePresence mode="wait">
-            <motion.p
-              key={announcementIndex}
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-center px-4"
-            >
+            <motion.p key={announcementIndex} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} transition={{ duration: 0.5 }} className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-center px-4">
               {announcements[announcementIndex]}
             </motion.p>
           </AnimatePresence>
@@ -194,12 +177,17 @@ const Header = () => {
               {isMobileSearchOpen ? <X className="w-8 h-8 text-primary" /> : <Search className="w-8 h-8 text-primary" />}
             </Button>
             <Link to={isLoggedIn ? "/profile" : "/login"} className="hidden lg:flex h-10 w-10 items-center justify-center"><User className="w-7 h-7 text-primary hover:text-accent transition-colors" /></Link>
-            <Link to="/cart" className="relative h-10 w-10 flex items-center justify-center">
+            
+            {/* ✅ CHANGED: Link to cart replaced by Button triggering the Sidebar */}
+            <button onClick={() => setIsCartOpen(true)} className="relative h-10 w-10 flex items-center justify-center">
                 <ShoppingBag className="w-8 h-8 text-primary hover:text-accent transition-colors" />
                 {cartCount > 0 && <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-accent text-white text-[10px] rounded-full flex items-center justify-center font-bold px-1 border-2 border-white">{cartCount}</span>}
-            </Link>
+            </button>
           </div>
         </div>
+        
+        {/* ✅ Added CartDrawer Component */}
+        <CartDrawer open={isCartOpen} setOpen={setIsCartOpen} />
 
         <AnimatePresence>
           {isMobileSearchOpen && (
