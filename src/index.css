@@ -270,6 +270,15 @@
     border: 2px solid white !important;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
 }
+/* This ensures Add to Bag has a Pink Border only */
+  .btn-add-to-bag {
+    @apply border-2 border-primary text-primary bg-white h-14 rounded-none uppercase font-extrabold tracking-widest transition-none;
+  }
+
+  /* This ensures Buy Now is Full Brand Pink */
+  .btn-buy-now {
+    @apply bg-primary text-white h-14 rounded-none uppercase font-extrabold tracking-widest transition-none shadow-lg shadow-primary/20;
+  }
 }
 
 @layer utilities {

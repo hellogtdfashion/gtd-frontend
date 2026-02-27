@@ -75,6 +75,11 @@ export const orderService = {
     const response = await api.post('/orders/checkout/', orderData);
     return response.data;
   },
+  getUserOrders: async (page: number = 1) => {
+    // This sends the page number to your Django backend (e.g., /api/orders/?page=1)
+    const response = await api.get(`/orders/?page=${page}`); 
+    return response.data;
+  },
 
   verifyPayment: async (paymentData: {
     razorpay_order_id: string;
@@ -85,10 +90,7 @@ export const orderService = {
     return response.data;
   },
 
-  getUserOrders: async () => {
-    const response = await api.get('/orders/');
-    return response.data;
-  },
+ 
 
   // 🔥 ADD THIS FUNCTION
   updateOrderStatus: async (orderId: number, newStatus: string) => {
@@ -97,6 +99,7 @@ export const orderService = {
     });
     return response.data;
   }
+  
 };
 
 export const storeService = {

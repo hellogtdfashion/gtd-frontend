@@ -18,8 +18,7 @@ const ProductDetail = () => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // 1. NO AUTO SELECTION: Set to null/empty by default
-  const [selectedColor, setSelectedColor] = useState<any>(null);
+  const [selectedColor, setSelectedColor] = useState<any>(null); 
   const [selectedSize, setSelectedSize] = useState("");
   const [displayPrice, setDisplayPrice] = useState<number>(0);
   const [quantity, setQuantity] = useState(1);
@@ -40,8 +39,6 @@ const ProductDetail = () => {
         ]);
         setProduct(data);
         setReviews(reviewsData.results || reviewsData);
-        
-        // 1. NO AUTO SELECTION: Removed initial color/size setting
         setDisplayPrice(Number(data.price));
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
@@ -61,6 +58,12 @@ const ProductDetail = () => {
     if (!selectedColor) return product.images;
     const filtered = product.images.filter((img: any) => img.color === selectedColor.id || !img.color);
     return filtered.length > 0 ? filtered : product.images;
+  }, [product, selectedColor]);
+
+  const availableSizes = useMemo(() => {
+    if (selectedColor) return selectedColor.sizes || [];
+    if (product && product.colors?.length > 0) return product.colors[0].sizes || [];
+    return [];
   }, [product, selectedColor]);
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
@@ -89,7 +92,6 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = (action: 'bag' | 'buy') => {
-    // Selection Validation
     if (!selectedColor) {
         toast.error("Please select a color first");
         return;
@@ -101,7 +103,7 @@ const ProductDetail = () => {
   
     addToCart(product, quantity, selectedSize, selectedColor);
     if (action === 'buy') {
-      navigate('/cart');
+      navigate('/checkout');
     } else {
       toast.success("Added to bag");
     }
@@ -115,7 +117,7 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <main className="pt-24 md:pt-40 pb-10">
+      <main className="pt-24 md:pt-40 pb-24 md:pb-10">
         <div className="max-w-[1400px] mx-auto px-4 md:px-10">
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
@@ -123,7 +125,6 @@ const ProductDetail = () => {
               <div className="aspect-[3/4] bg-zinc-50 relative overflow-hidden group">
                 <img src={displayImages[currentImage]?.url} className="w-full h-full object-cover transition-opacity duration-300" alt="" />
                 <div className="absolute bottom-4 right-4 flex gap-2">
-                  {/* 3. Removed Wishlist Heart Icon */}
                   <button className="bg-white/90 p-3 rounded-full shadow-sm hover:bg-zinc-100"><Share2 size={18} /></button>
                 </div>
               </div>
@@ -132,7 +133,6 @@ const ProductDetail = () => {
                   <button 
                     key={i} 
                     onClick={() => setCurrentImage(i)} 
-                    // 4. Removed opacity-40 from non-selected images
                     className={`shrink-0 w-20 aspect-[3/4] border-2 transition-all ${currentImage === i ? 'border-black' : 'border-transparent'}`}
                   >
                     <img src={img.url} className="w-full h-full object-cover" alt="" />
@@ -166,7 +166,7 @@ const ProductDetail = () => {
                     <button 
                         key={c.name} 
                         onClick={() => {setSelectedColor(c); setCurrentImage(0); setSelectedSize("");}} 
-                        className={`w-14 h-18 border-2 transition-all overflow-hidden ${selectedColor?.name === c.name ? 'border-black' : 'border-zinc-100 opacity-60'}`}
+                        className={`w-14 h-18 border-2 transition-all overflow-hidden ${selectedColor?.name === c.name ? 'border-black' : 'border-zinc-100'}`}
                     >
                       <img src={product.images.find((i:any)=>i.color === c.id || i.color_name === c.name)?.url || product.images[0].url} className="w-full h-full object-cover" />
                     </button>
@@ -179,10 +179,9 @@ const ProductDetail = () => {
                   <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-700">
                     Size {selectedSize ? `: ${selectedSize}` : '(Required)'}
                   </span>
-                  {/* 1. Removed Guide Button */}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {(selectedColor?.sizes || []).map((s: any) => (
+                  {availableSizes.map((s: any) => (
                     <button 
                         key={s.size} 
                         onClick={() => setSelectedSize(s.size)} 
@@ -192,7 +191,6 @@ const ProductDetail = () => {
                       {s.size}
                     </button>
                   ))}
-                  {!selectedColor && <p className="text-[10px] text-zinc-400 italic">Please select a color to view sizes</p>}
                 </div>
               </div>
 
@@ -205,17 +203,17 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-10">
+              {/* ACTION BUTTONS: White with Pink border for Add to Bag, Solid Pink for Buy Now */}
+              <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-zinc-100 grid grid-cols-2 gap-3 z-50 md:relative md:p-0 md:border-t-0 md:bg-transparent md:grid mb-10">
                 <Button 
                     onClick={() => handleAddToCart('bag')} 
-                    variant="outline" 
-                    className={`btn-premium border-zinc-900 text-zinc-900 ${!selectedSize ? 'opacity-70' : ''}`}
+                    className="h-14 rounded-none uppercase text-[10px] font-extrabold tracking-widest bg-white border-2 border-primary text-primary hover:bg-white transition-none"
                 >
                     Add to Bag
                 </Button>
                 <Button 
                     onClick={() => handleAddToCart('buy')} 
-                    className={`btn-premium bg-zinc-900 text-white ${!selectedSize ? 'opacity-70' : ''}`}
+                    className="h-14 rounded-none uppercase text-[10px] font-extrabold tracking-widest bg-primary text-white hover:bg-primary transition-none shadow-lg shadow-primary/20"
                 >
                     Buy Now
                 </Button>
