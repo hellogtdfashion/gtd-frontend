@@ -1,2 +1,0 @@
-npm install axios
-npm install @react-oauth/google
