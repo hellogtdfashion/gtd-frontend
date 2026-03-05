@@ -71,23 +71,23 @@ const Footer = () => {
           <div className="space-y-2">
             <p>© 2026 Glorious Threads by Divya. All rights reserved.</p>
             
-            {/* StaffArc Branding with Updated Logo */}
-            <div className="flex justify-center items-center gap-1 normal-case font-medium text-white/50">
-              Made with <Heart className="inline h-3 w-3 text-red-500 mx-0.5 fill-red-500" /> by
-              <a
-                href="https://staffarc.in"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-orange-500 hover:text-orange-400 transition-colors ml-1"
-              >
-                <img
-                  src="https://staffarc.in/images/staffarc-logo.png"
-                  alt="StaffArc logo"
-                  className="h-5 w-5 object-contain"
-                />
-                StaffArc
-              </a>
-            </div>
+           {/* StaffArc Branding with Precise Asset Path */}
+<div className="flex justify-center items-center gap-1 text-[11px] font-medium text-white/50 normal-case">
+  Made with <Heart className="inline h-4 w-4 text-red-500 mx-1 fill-red-500" /> by
+  <a
+    href="https://staffarc.in"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex items-center gap-1 text-orange-600 hover:underline transition-all"
+  >
+    <img
+      src="https://www.staffarc.in/images/Staffarc-logo.png"
+      alt="StaffArc logo"
+      className="h-5 w-5 object-contain"
+    />
+    StaffArc
+  </a>
+</div> 
           </div>
         </div>
       </div>
