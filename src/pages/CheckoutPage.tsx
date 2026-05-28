@@ -83,38 +83,45 @@ const CheckoutPage = () => {
   const [errors, setErrors] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    const fetchLocation = async () => {
-      if (address.pincode.length === 6) {
-        if (!/^[1-9][0-9]{5}$/.test(address.pincode)) {
-            toast.error("Invalid Pincode Format", { description: "Please enter a valid 6-digit Indian Pincode." });
-            return;
-        }
+  const fetchLocation = async () => {
+    if (address.pincode.length !== 6) return;
 
-        try {
-          const res = await fetch(`https://api.postalpincode.in/pincode/${address.pincode}`);
-          const data = await res.json();
-          
-          if (data[0].Status === "Success" && data[0].PostOffice) {
-            const postOffice = data[0].PostOffice[0];
-            const foundState = INDIAN_STATES.find(s => s.toLowerCase() === postOffice.State.toLowerCase());
-            
-            setAddress(prev => ({
-              ...prev,
-              city: postOffice.District,
-              state: foundState || postOffice.State
-            }));
-            setErrors(prev => ({ ...prev, city: false, state: false, pincode: false }));
-          } else {
-            setAddress(prev => ({ ...prev, city: '', state: '' }));
-            toast.error("Pincode Not Found", { description: "Shipping is only available in India. Please use a valid Indian Pincode." });
-          }
-        } catch (err) {
-          console.error("Pincode lookup error:", err);
-        }
+    // Only allow valid Indian 6-digit format
+    if (!/^[1-9][0-9]{5}$/.test(address.pincode)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`https://api.postalpincode.in/pincode/${address.pincode}`);
+      const data = await res.json();
+
+      if (data[0]?.Status === "Success" && data[0]?.PostOffice?.length > 0) {
+        const postOffice = data[0].PostOffice[0];
+
+        const foundState = INDIAN_STATES.find(
+          s => s.toLowerCase() === postOffice.State.toLowerCase()
+        );
+
+        setAddress(prev => ({
+          ...prev,
+          city: postOffice.District || '',
+          state: foundState || postOffice.State || ''
+        }));
+
+        setErrors(prev => ({
+          ...prev,
+          city: false,
+          state: false,
+          pincode: false
+        }));
       }
-    };
-    fetchLocation();
-  }, [address.pincode]);
+    } catch (err) {
+      console.error("Pincode lookup error:", err);
+    }
+  };
+
+  fetchLocation();
+}, [address.pincode]);
 
 useEffect(() => {
     const init = async () => {
@@ -233,13 +240,14 @@ useEffect(() => {
 const handlePayment = async () => {
     setHasAttemptedPay(true);
 
-    if (address.pincode.length !== 6 || !isIndianPincode || !address.state) {
-        toast.error("Invalid Shipping Location", {
-            description: "Please enter a valid 6-digit Indian Pincode. Shipping is currently only available within India."
-        });
-        setErrors(prev => ({ ...prev, pincode: true }));
-        return;
-    }
+    if (!/^[1-9][0-9]{5}$/.test(address.pincode)) {
+  toast.error("Invalid Shipping Location", {
+    description: "Shipping is only available in India. Please use a valid Indian Pincode."
+  });
+
+  setErrors(prev => ({ ...prev, pincode: true }));
+  return;
+}
 
     // 1. Check for basic mandatory fields first
     const isValid = validateForm();
@@ -422,17 +430,23 @@ const handlePayment = async () => {
                 />
 
                 <Input 
-                  placeholder="State *" 
-                  className={errorStyle('state')}
-                  value={address.state} 
-                  readOnly 
-                />
+  placeholder="State *" 
+  className={errorStyle('state')}
+  value={address.state}
+  onChange={e => {
+    setAddress({ ...address, state: e.target.value });
+    if (errors.state) setErrors({ ...errors, state: false });
+  }}
+/>
                 <Input 
-                  placeholder="City *" 
-                  className={`col-span-2 ${errorStyle('city')}`}
-                  value={address.city} 
-                  readOnly 
-                />
+  placeholder="City *" 
+  className={`col-span-2 ${errorStyle('city')}`}
+  value={address.city}
+  onChange={e => {
+    setAddress({ ...address, city: e.target.value });
+    if (errors.city) setErrors({ ...errors, city: false });
+  }}
+/>
                 
                 <Input 
                   className={`col-span-2 ${errorStyle('street')}`} 
