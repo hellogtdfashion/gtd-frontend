@@ -64,12 +64,20 @@ const ProductDetail = () => {
 
   // --- FIXED DISPLAY IMAGES LOGIC ---
   const displayImages = useMemo(() => {
-    if (!product) return [];
-    if (!selectedColor) return product.images;
-    const filtered = product.images.filter((img: any) => img.color === selectedColor.id || !img.color);
-    // If only 1 image exists for a color, we show all images so navigation arrows remain useful
-    return filtered.length > 1 ? filtered : product.images;
-  }, [product, selectedColor]);
+  if (!product) return [];
+
+  // No color selected → show all images
+  if (!selectedColor) return product.images;
+
+  const filtered = product.images.filter(
+    (img: any) =>
+      img.color === selectedColor.id ||
+      img.color_name === selectedColor.name
+  );
+
+  // fallback
+  return filtered.length > 0 ? filtered : product.images;
+}, [product, selectedColor]);
 
   const availableSizes = useMemo(() => {
     if (selectedColor) return selectedColor.sizes || [];
@@ -232,7 +240,7 @@ const handleAddToCart = (action: 'bag' | 'buy') => {
                 </div>
               </div>
 
-              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+              <div className="hidden md:flex gap-2 overflow-x-auto scrollbar-hide pb-2">
                 {displayImages.map((img: any, i: number) => (
                   <button 
                     key={i} 
