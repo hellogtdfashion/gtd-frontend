@@ -32,7 +32,7 @@ const ProductDetail = () => {
   const [hoveredStar, setHoveredStar] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+useEffect(() => {
   const loadData = async () => {
     try {
       setLoading(true);
@@ -45,6 +45,9 @@ const ProductDetail = () => {
       setDisplayPrice(Number(data.price));
       // 🔥 ADD THIS LINE HERE
       setDisplayOriginalPrice(Number(data.original_price)); 
+      if (data.colors && data.colors.length > 0) {
+        setSelectedColor(data.colors[0]);
+      }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -62,23 +65,26 @@ const ProductDetail = () => {
     }
   }, [selectedSize, selectedColor]);
 
-  // --- FIXED DISPLAY IMAGES LOGIC ---
+// --- FIXED DISPLAY IMAGES LOGIC ---
   const displayImages = useMemo(() => {
-  if (!product) return [];
+    if (!product) return [];
 
-  // No color selected → show all images
-  if (!selectedColor) return product.images;
+    // If no color is selected yet, fall back to the very first image's color family as default
+    const activeColor = selectedColor || product.colors?.[0];
+    if (!activeColor) return product.images;
 
-  const filtered = product.images.filter(
-    (img: any) =>
-      img.color === selectedColor.id ||
-      img.color_name === selectedColor.name
-  );
+    const filtered = product.images.filter(
+      (img: any) =>
+        img.color === activeColor.id ||
+        img.color_name === activeColor.name
+    );
 
-  // fallback
-  return filtered.length > 0 ? filtered : product.images;
-}, [product, selectedColor]);
-
+    // Strictly return only this variant's images. Never leak other colors.
+    return filtered;
+  }, [product, selectedColor]);
+  useEffect(() => {
+    setCurrentImage(0);
+  }, [selectedColor]);
   const availableSizes = useMemo(() => {
     if (selectedColor) return selectedColor.sizes || [];
     if (product && product.colors?.length > 0) return product.colors[0].sizes || [];
