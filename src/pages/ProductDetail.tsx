@@ -26,7 +26,7 @@ const ProductDetail = () => {
   const [displayOriginalPrice, setDisplayOriginalPrice] = useState<number>(0);
   // --- ZOOM STATE ---
   const [isZoomOpen, setIsZoomOpen] = useState(false);
-
+  const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewForm, setReviewForm] = useState({ name: '', rating: 5, comment: '', image: null as File | null });
   const [hoveredStar, setHoveredStar] = useState(0);
@@ -314,7 +314,17 @@ const handleAddToCart = (action: 'bag' | 'buy') => {
                     </button>
                   ))}
                 </div>
-              </div>
+                {/* 🔥 ADD THIS CONDITIONAL TRIGGER BUTTON HERE */}
+                {product.size_chart && (
+                    <button
+                      type="button"
+                      onClick={() => setIsSizeChartOpen(true)}
+                      className="text-[11px] font-extrabold uppercase text-primary hover:text-black tracking-wider underline transition-colors duration-200"
+                    >
+                      Size Guide
+                    </button>
+                  )}
+                </div>
 
               {/* QUANTITY SECTION WITH STOCK VALIDATION */}
               <div className="mb-10">
@@ -568,6 +578,38 @@ const handleAddToCart = (action: 'bag' | 'buy') => {
             className="max-w-full max-h-[90vh] object-contain shadow-2xl" 
             alt="Zoomed Product"
           />
+        </div>
+      )}
+
+      {/* --- RESPONSIVE SIZE GUIDE MODAL --- */}
+      {isSizeChartOpen && product.size_chart && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+          onClick={() => setIsSizeChartOpen(false)}
+        >
+          <div 
+            className="relative bg-white p-5 md:p-6 rounded-2xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setIsSizeChartOpen(false)}
+              className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-black transition-colors rounded-full hover:bg-zinc-100"
+            >
+              <X size={18} />
+            </button>
+            
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] mb-4 mt-2 text-zinc-800 text-center">
+              Size Reference Guide
+            </h3>
+            
+            <div className="w-full overflow-y-auto rounded-xl border border-zinc-100 bg-zinc-50/50 p-2 flex items-center justify-center">
+              <img 
+                src={product.size_chart} 
+                className="max-w-full h-auto max-h-[65vh] object-contain rounded-lg" 
+                alt="Size Matrix Diagram"
+              />
+            </div>
+          </div>
         </div>
       )}
 
