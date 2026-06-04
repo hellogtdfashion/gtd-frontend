@@ -96,10 +96,25 @@ const Header = () => {
             <p className="text-[10px] uppercase font-bold text-gray-400 mb-2 px-2 tracking-widest">Products</p>
             {productResults.map(p => (
               <button key={p.id} onClick={() => handleResultClick(`/product/${p.slug}`)} className="flex items-center gap-3 w-full p-2 hover:bg-[#FFF8F8] rounded-xl text-left transition-colors">
-                <img src={p.images?.[0]?.url || ''} className="w-10 h-12 object-cover rounded-lg" alt={p.name} />
-                <div className="flex-1">
-                  <p className="text-xs font-bold text-gray-800 uppercase tracking-tighter line-clamp-1">{p.name}</p>
-                  <p className="text-[10px] text-primary font-bold">₹{p.price}</p>
+                {/* Product Image */}
+                <img src={p.images?.[0]?.url || ''} className="w-10 h-12 object-cover rounded-lg bg-zinc-50 border border-zinc-100 flex-shrink-0" alt={p.title} />
+                
+                {/* Product Details Column */}
+                <div className="flex-1 min-w-0 flex flex-col gap-0.5 text-left">
+                  {/* Title / Name */}
+                  <p className="text-xs font-bold text-gray-800 uppercase tracking-tight truncate">
+                    {p.title}
+                  </p>
+                  
+                  {/* SKU Display */}
+                  <p className="text-[9px] font-black tracking-widest text-zinc-400 uppercase">
+                    {p.sku || "N/A"}
+                  </p>
+                  
+                  {/* Price */}
+                  <p className="text-[10px] text-primary font-black mt-0.5">
+                    ₹{p.price}
+                  </p>
                 </div>
               </button>
             ))}
@@ -108,7 +123,6 @@ const Header = () => {
       )}
     </AnimatePresence>
   );
-
   return (
     <div className="fixed top-0 left-0 right-0 z-50 font-sans">
       {announcements.length > 0 && (

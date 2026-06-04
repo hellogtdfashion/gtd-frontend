@@ -260,10 +260,21 @@ const handleAddToCart = (action: 'bag' | 'buy') => {
             </div>
 
             {/* RIGHT SIDE: DETAILS SECTION */}
-            <div className="flex flex-col pt-2 max-w-2xl text-left">
+<div className="flex flex-col pt-2 max-w-2xl text-left">
               <div className="mb-6">
                 <h1 className="text-xl md:text-3xl font-bold tracking-tight text-zinc-800 mb-1">{product.title}</h1>
-                <p className="text-sm text-zinc-400 font-medium uppercase tracking-widest mb-4">{product.category_name}</p>
+                
+                {/* 🌟 Styled E-commerce Category & SKU Bar */}
+                <div className="flex flex-wrap items-center gap-x-3 text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-4">
+                  <span>{product.category_name}</span>
+                  {product.sku && (
+                    <>
+                      <span className="text-zinc-200 font-light">|</span>
+                      <span className="text-zinc-400 font-bold select-all">Code: {product.sku}</span>
+                    </>
+                  )}
+                </div>
+
                 <div className="flex items-center gap-3 py-4 border-y border-zinc-100">
                   <span className="text-2xl font-extrabold text-black">₹{displayPrice}</span>
                   {displayOriginalPrice > 0 && (
