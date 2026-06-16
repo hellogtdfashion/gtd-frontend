@@ -413,7 +413,8 @@ const handleAddToCart = (action: 'bag' | 'buy') => {
                   <TabsContent value="details" className="text-zinc-600 text-sm leading-relaxed space-y-8 animate-in fade-in">
                     <div>
                       <h4 className="text-[10px] font-black uppercase tracking-widest text-black mb-3">Description</h4>
-                      <p>{product.description}</p>
+                      {/* 🌟 Added whitespace-pre-line to render newlines from the backend */}
+                      <p className="whitespace-pre-line">{product.description}</p>
                     </div>
                     {product.features && (
                       <div>

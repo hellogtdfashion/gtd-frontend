@@ -14,19 +14,27 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
-
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      const isLoginRequest = error.config.url.includes('/auth/login') || error.config.url.includes('/auth/google');
-      // NEW: Don't redirect for public store data
-      const isPublicRequest = 
-  error.config.url.includes('/store/') || 
-  error.config.url.includes('/content/') ||
-  error.config.url.includes('/watch-and-buy/');
-      
-      if (!isLoginRequest && !isPublicRequest) {
+      const url = error.config?.url || '';
+
+      const isLoginRequest = url.includes('/auth/login') || url.includes('/auth/google');
+
+      // Don't redirect to login for public store data endpoints
+      const isPublicRequest =
+        url.includes('/store/')        ||
+        url.includes('/content/')      ||
+        url.includes('/watch-and-buy/');
+
+      // ── GUEST CHECKOUT LAYER ── 
+      // Prevent forcing /login redirects if guest checkout execution triggers a 401 token mismatch
+      const isGuestCheckoutRequest =
+        url.includes('/orders/checkout/') ||
+        url.includes('/payments/verify/');
+
+      if (!isLoginRequest && !isPublicRequest && !isGuestCheckoutRequest) {
         localStorage.removeItem('userToken');
         if (window.location.pathname !== '/login') {
           window.location.href = '/login';
@@ -36,7 +44,6 @@ api.interceptors.response.use(
     return Promise.reject(error.response?.data || error);
   }
 );
-
 export const authService = {
   login: async (credentials: any) => {
     const res = await api.post('/auth/login/', credentials);
