@@ -51,7 +51,7 @@ const Footer = () => {
             <div className="sm:col-span-1">
               <h4 className="font-display text-base font-bold mb-6 text-white uppercase tracking-widest text-left">Contact</h4>
               <div className="space-y-4 text-sm text-white/60 flex flex-col items-start">
-                <div className="flex items-center gap-3 text-left"><Phone className="w-4 h-4 text-accent shrink-0" /><span>+91 85000 85065</span></div>
+                <div className="flex items-center gap-3 text-left"><Phone className="w-4 h-4 text-accent shrink-0" /><span>+91 80502 33820</span></div>
                 <div className="flex items-center gap-3 text-left"><Mail className="w-4 h-4 text-accent shrink-0" /><span className="italic">hello.gtdfashion@gmail.com</span></div>
                 <div className="flex items-start gap-3 text-left"><MapPin className="w-4 h-4 text-accent mt-1 shrink-0" /><span>Bangalore, Karnataka, 560102 India</span></div>
               </div>
