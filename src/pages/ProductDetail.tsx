@@ -346,8 +346,8 @@ const handleAddToCart = (action: 'bag' | 'buy') => {
               {/* QUANTITY SECTION WITH STOCK VALIDATION */}
               <div className="mb-10">
                 <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-700 block mb-4">
-                  Quantity {selectedVariant ? `(Only ${selectedVariant.stock} available)` : ''}
-                </span>
+  Quantity
+</span>
                 <div className="flex items-center w-fit border-2 border-zinc-100 bg-zinc-50/50">
                   <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-4 py-3 hover:bg-zinc-100 border-r border-zinc-100"><Minus size={14}/></button>
                   <span className="px-8 font-extrabold text-sm">{quantity}</span>
