@@ -141,37 +141,37 @@ useEffect(() => {
   // ─── REPLACE YOUR ENTIRE handleShare FUNCTION WITH THIS ───────────────────
   const handleShare = async () => {
     const currentUrl = window.location.href;
+    // Using product.name to match your SQL schema column key
+    const productTitle = product?.name || product?.title || "GTDfashion";
     
-    // Clean up the text payload to make it friendly for WhatsApp, iMessage, etc.
     const shareData = {
-      title: product.title || "Stature Vogue",
-      text: `Check out this ${product.title || "product"} on Stature Vogue!`,
+      title: productTitle,
+      text: `Check out this ${productTitle} on GTDfashion!`,
       url: currentUrl,
     };
 
     try {
-      // Modern platforms explicitly validate the payload structure via canShare first
+      // Explicitly check native support before calling canShare to prevent runtime crashes
       if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
-        return; // Native share drawer successfully opened!
+        return; 
       } 
       
-      // Fallback 1: Manual fallback if navigator.share is disabled or unsupported
+      // Fallback 1: Direct fallback if native sharing is completely blocked/unsupported
       await navigator.clipboard.writeText(`${shareData.text}\n\nLink: ${currentUrl}`);
       toast.success("Description and link copied to clipboard!");
     } catch (err) {
-      // Handle the case where the user opens the drawer but changes their mind and clicks 'Cancel'
       if (err instanceof Error && err.name === 'AbortError') {
-        console.log("User closed the share menu sheet.");
+        console.log("User dismissed the share sheet window.");
         return;
       }
       
-      // Fallback 2: Absolute safety fallback if the native API errors out mid-execution
+      // Fallback 2: Direct URL fallback if the Web Share API fails mid-execution
       try {
         await navigator.clipboard.writeText(currentUrl);
         toast.success("Product link copied to clipboard!");
       } catch (clipErr) {
-        console.error("Clipboard backup failed:", clipErr);
+        console.error("Clipboard backup execution failed:", clipErr);
       }
     }
   };
@@ -264,12 +264,8 @@ const handleAddToCart = (action: 'bag' | 'buy') => {
       e.stopPropagation(); 
       handleShare(); 
     }}
-    onTouchEnd={(e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      handleShare();
-    }}
-    className="bg-white/90 p-3 rounded-full shadow-lg hover:bg-zinc-100 transition-all border border-zinc-100 active:scale-95"
+    className="bg-white/90 p-3 rounded-full shadow-lg hover:bg-zinc-100 transition-all border border-zinc-100 active:scale-95 flex items-center justify-center text-zinc-800"
+    title="Share Product"
   >
     <Share2 size={18} />
   </button>
