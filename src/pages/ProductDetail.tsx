@@ -137,25 +137,44 @@ useEffect(() => {
     }
   };
 
+  // ─── REPLACE YOUR ENTIRE handleShare FUNCTION WITH THIS ───────────────────
+  // ─── REPLACE YOUR ENTIRE handleShare FUNCTION WITH THIS ───────────────────
   const handleShare = async () => {
+    const currentUrl = window.location.href;
+    
+    // Clean up the text payload to make it friendly for WhatsApp, iMessage, etc.
     const shareData = {
-      title: product.title,
-      text: `Check out this ${product.title} on Watch & Buy!`,
-      url: window.location.href,
+      title: product.title || "Stature Vogue",
+      text: `Check out this ${product.title || "product"} on Stature Vogue!`,
+      url: currentUrl,
     };
 
     try {
-      if (navigator.share) {
+      // Modern platforms explicitly validate the payload structure via canShare first
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
-      } else {
-        await navigator.clipboard.writeText(window.location.href);
-        toast.success("Link copied to clipboard!");
-      }
+        return; // Native share drawer successfully opened!
+      } 
+      
+      // Fallback 1: Manual fallback if navigator.share is disabled or unsupported
+      await navigator.clipboard.writeText(`${shareData.text}\n\nLink: ${currentUrl}`);
+      toast.success("Description and link copied to clipboard!");
     } catch (err) {
-      console.error("Error sharing:", err);
+      // Handle the case where the user opens the drawer but changes their mind and clicks 'Cancel'
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.log("User closed the share menu sheet.");
+        return;
+      }
+      
+      // Fallback 2: Absolute safety fallback if the native API errors out mid-execution
+      try {
+        await navigator.clipboard.writeText(currentUrl);
+        toast.success("Product link copied to clipboard!");
+      } catch (clipErr) {
+        console.error("Clipboard backup failed:", clipErr);
+      }
     }
   };
-
 const handleAddToCart = (action: 'bag' | 'buy') => {
     if (!selectedColor) {
       toast.error("Please select a color first"); 
@@ -236,14 +255,25 @@ const handleAddToCart = (action: 'bag' | 'buy') => {
                   className="max-w-full max-h-full object-contain transition-opacity duration-300" 
                   alt="" 
                 />
-                <div className="absolute bottom-4 right-4 flex gap-2">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); handleShare(); }}
-                    className="bg-white/90 p-3 rounded-full shadow-sm hover:bg-zinc-100 transition-colors"
-                  >
-                    <Share2 size={18} />
-                  </button>
-                </div>
+                {/* ─── REPLACE IT WITH THIS EXTRA-SAFE MOBILE SPECIFIC VERSION ─── */}
+<div className="absolute bottom-4 right-4 flex gap-2 z-30">
+  <button 
+    type="button"
+    onClick={(e) => { 
+      e.preventDefault();
+      e.stopPropagation(); 
+      handleShare(); 
+    }}
+    onTouchEnd={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handleShare();
+    }}
+    className="bg-white/90 p-3 rounded-full shadow-lg hover:bg-zinc-100 transition-all border border-zinc-100 active:scale-95"
+  >
+    <Share2 size={18} />
+  </button>
+</div>
               </div>
 
               <div className="hidden md:flex gap-2 overflow-x-auto scrollbar-hide pb-2">
